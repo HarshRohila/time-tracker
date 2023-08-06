@@ -1,0 +1,10 @@
+$dim: 100px;
+
+.add-tracker {
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: $dim;
+  width: $dim;
+  font-size: 2rem;
+}
