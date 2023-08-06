@@ -1,8 +1,12 @@
 export interface ITrackerService {
   add(): Tracker
+  save(trackers: Tracker[]): void
+  load(): Tracker[]
 }
 
 export class TrackerService implements ITrackerService {
+  private static storageKey = "trackers"
+
   add(): Tracker {
     let input
     do {
@@ -10,6 +14,15 @@ export class TrackerService implements ITrackerService {
     } while (!input)
 
     return { name: input }
+  }
+
+  save(trackers: Tracker[]): void {
+    localStorage.setItem(TrackerService.storageKey, JSON.stringify(trackers))
+  }
+
+  load(): Tracker[] {
+    const trackers = localStorage.getItem(TrackerService.storageKey)
+    return trackers ? JSON.parse(trackers) : []
   }
 }
 

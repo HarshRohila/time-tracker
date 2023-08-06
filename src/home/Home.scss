@@ -8,3 +8,9 @@ $dim: 100px;
   width: $dim;
   font-size: 2rem;
 }
+.tracker-list {
+  list-style-type: none;
+  li {
+    margin: 20px;
+  }
+}

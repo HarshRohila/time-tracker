@@ -1,5 +1,6 @@
 import { useCallback, useState } from "preact/hooks"
 import { Tracker as TrackerModel } from "./tracker-service"
+import "./tracker.scss"
 
 interface TrackerProps {
   tracker: TrackerModel
