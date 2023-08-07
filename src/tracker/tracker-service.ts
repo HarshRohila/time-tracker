@@ -13,7 +13,7 @@ export class TrackerService implements ITrackerService {
       input = prompt("Enter name of tracker")
     } while (!input)
 
-    return { name: input }
+    return { name: input, timeInSecs: 0 }
   }
 
   save(trackers: Tracker[]): void {
@@ -28,4 +28,5 @@ export class TrackerService implements ITrackerService {
 
 export interface Tracker {
   name: string
+  timeInSecs: number
 }
