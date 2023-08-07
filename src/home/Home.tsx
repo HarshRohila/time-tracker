@@ -80,6 +80,19 @@ export function Home() {
     [timer, activeTracker]
   )
 
+  const onDeleteTracker = useCallback(
+    (tracker: TrackerModel) => {
+      const response = confirm(`Are you sure you want to delete tracker - ${tracker.name} ?`)
+
+      if (response) {
+        const filtered = trackers.filter((t) => t.name !== tracker.name)
+        setTrackers(filtered)
+        trackerService.save(filtered)
+      }
+    },
+    [trackers]
+  )
+
   return (
     <>
       <ul className="tracker-list">
@@ -89,6 +102,7 @@ export function Home() {
               <Tracker
                 onStartTracker={onStartTracker}
                 onPauseTracker={onPauseTracker}
+                onDeleteTracker={onDeleteTracker}
                 isActive={t.name === activeTracker?.name}
                 tracker={t.name === activeTracker?.name ? activeTracker : t}
               />
