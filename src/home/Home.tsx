@@ -1,21 +1,29 @@
-import { useCallback, useState } from "preact/hooks"
+import { useCallback, useEffect, useState } from "preact/hooks"
 import { Tracker } from "../tracker/tracker"
 import "./Home.scss"
 import { Tracker as TrackerModel } from "../tracker/tracker-service"
 import { Factory } from "../utils/factory"
 
+const SAVE_AFTER_IN_SECS = 10
+
 const trackerService = Factory.getTrackerService()
 
 export function Home() {
-  const [trackers, setTrackers] = useState<TrackerModel[]>(
-    trackerService.load()
-  )
+  const [trackers, setTrackers] = useState<TrackerModel[]>(trackerService.load())
 
   const [timer, setTimer] = useState<number | undefined>(undefined)
 
-  const [activeTracker, setActiveTracker] = useState<TrackerModel | undefined>(
-    undefined
-  )
+  const [activeTracker, setActiveTracker] = useState<TrackerModel | undefined>(undefined)
+
+  useEffect(() => {
+    let saveInterval = setInterval(() => {
+      trackerService.save(trackers)
+    }, SAVE_AFTER_IN_SECS * 1000)
+
+    return () => {
+      clearInterval(saveInterval)
+    }
+  }, [])
 
   const handleAddTracker = useCallback(() => {
     const tracker = trackerService.add()
@@ -26,10 +34,7 @@ export function Home() {
     })
   }, [])
 
-  const makeTrackerActive = (
-    newTracker: TrackerModel | undefined,
-    oldTracker: TrackerModel | undefined
-  ) => {
+  const makeTrackerActive = (newTracker: TrackerModel | undefined, oldTracker: TrackerModel | undefined) => {
     const findAndReplace = (tracker: TrackerModel) => {
       const index = trackers.findIndex((t) => t.name === tracker.name)
       trackers.splice(index, 1, tracker)
