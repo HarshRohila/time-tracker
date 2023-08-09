@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
+    "cypress:open": "cypress open",
     "deploy": "pnpm build --base=/time-tracker && gh-pages -d dist"
   },
   "dependencies": {
@@ -15,9 +16,10 @@
   },
   "devDependencies": {
     "@preact/preset-vite": "^2.5.0",
+    "cypress": "^12.17.3",
     "gh-pages": "^5.0.0",
     "sass": "^1.64.2",
-    "typescript": "^5.0.2",
+    "typescript": "^5.1.6",
     "vite": "^4.4.5"
   }
 }
