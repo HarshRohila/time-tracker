@@ -25,11 +25,11 @@ export function Tracker({ tracker, onStartTracker, isActive, onPauseTracker, onD
   }, [tracker, onDeleteTracker])
 
   return (
-    <div className="tracker">
+    <div className="tracker" data-test="tracker">
       <span>{tracker.name}</span>
-      <span>{tracker.timeInSecs.toString()}</span>
+      <span data-test="tracker-time">{tracker.timeInSecs.toString()}</span>
       {!isActive && (
-        <button className="primary" onClick={handleStart}>
+        <button data-test="start-tracker" className="primary" onClick={handleStart}>
           Start
         </button>
       )}
