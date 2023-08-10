@@ -26,26 +26,26 @@ describe("The Home Page", () => {
   it("Adding tracker and starting it", () => {
     cy.visit("/")
 
-    const clock = cy.clock()
-
     cy.getByTestId("tracker").should("not.exist")
 
     cy.window().then((win) => {
       addTracker(win, "harsh tracker")
       cy.getByTestId("tracker").should("exist").log("Tracker Added")
 
+      const clock = cy.clock()
       startTracker(clock, 10000)
       assertTrackerTime("10").log("Tracker shows expected time")
     })
   })
 
   it("Second tracker start will pause other tracker", () => {
-    const clock = cy.clock()
     cy.window().then((win) => {
       preloadTrackers(win, [{ name: "firstTracker", timeInSecs: 5 }])
 
       cy.visit("/").then(() => {
         addTracker(win, "secondTracker")
+
+        const clock = cy.clock()
 
         startTracker(clock, 4000, 1)
         startTracker(clock, 5000, 0)
@@ -57,7 +57,6 @@ describe("The Home Page", () => {
   })
 
   it("Delete tracker works", () => {
-    const clock = cy.clock()
     cy.window().then((win) => {
       preloadTrackers(win, [
         { name: "firstTracker", timeInSecs: 5 },

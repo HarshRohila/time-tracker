@@ -3,13 +3,31 @@ import { Tracker } from "../tracker/tracker"
 import "./Home.scss"
 import { Tracker as TrackerModel } from "../tracker/tracker-service"
 import { Factory } from "../utils/factory"
+import { events, features, state$, utils } from "./facade"
+import { Subject, takeUntil } from "rxjs"
 
 const SAVE_AFTER_IN_SECS = 10
 
 const trackerService = Factory.getTrackerService()
 
 export function Home() {
-  const [trackers, setTrackers] = useState<TrackerModel[]>(trackerService.load())
+  const [trackers, setTrackers] = useState<TrackerModel[]>([])
+
+  useEffect(() => {
+    const destroy$ = new Subject<void>()
+
+    state$.pipe(takeUntil(destroy$)).subscribe((s) => {
+      setTrackers(s.trackers)
+    })
+
+    features.addTracker$.pipe(takeUntil(destroy$)).subscribe()
+    features.deleteTracker$.pipe(takeUntil(destroy$)).subscribe()
+
+    return () => {
+      destroy$.next()
+      destroy$.complete()
+    }
+  }, [])
 
   const [timer, setTimer] = useState<number | undefined>(undefined)
 
@@ -25,20 +43,11 @@ export function Home() {
     }
   }, [])
 
-  const handleAddTracker = useCallback(() => {
-    const tracker = trackerService.add()
-    setTrackers((t) => {
-      const newTrackers = [...t, tracker]
-      trackerService.save(newTrackers)
-      return newTrackers
-    })
-  }, [])
-
   const makeTrackerActive = (newTracker: TrackerModel | undefined, oldTracker: TrackerModel | undefined) => {
     const findAndReplace = (tracker: TrackerModel) => {
       const index = trackers.findIndex((t) => t.name === tracker.name)
       trackers.splice(index, 1, tracker)
-      setTrackers([...trackers])
+      utils.setTrackers([...trackers])
     }
 
     oldTracker && findAndReplace(oldTracker)
@@ -80,18 +89,9 @@ export function Home() {
     [timer, activeTracker]
   )
 
-  const onDeleteTracker = useCallback(
-    (tracker: TrackerModel) => {
-      const response = confirm(`Are you sure you want to delete tracker - ${tracker.name} ?`)
-
-      if (response) {
-        const filtered = trackers.filter((t) => t.name !== tracker.name)
-        setTrackers(filtered)
-        trackerService.save(filtered)
-      }
-    },
-    [trackers]
-  )
+  const onDeleteTracker = useCallback((tracker: TrackerModel) => {
+    events.deleteTrackerClick$.next(tracker)
+  }, [])
 
   return (
     <>
@@ -110,7 +110,7 @@ export function Home() {
           </li>
         ))}
       </ul>
-      <button data-test="add-tracker" onClick={handleAddTracker} class="add-tracker">
+      <button data-test="add-tracker" onClick={() => events.addTrackerClick$.next()} class="add-tracker">
         Add
       </button>
     </>
