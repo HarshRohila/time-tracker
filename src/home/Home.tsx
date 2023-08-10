@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useState } from "preact/hooks"
+import { useEffect, useState } from "preact/hooks"
 import { Tracker } from "../tracker/tracker"
 import "./Home.scss"
 import { Tracker as TrackerModel } from "../tracker/tracker-service"
 import { Factory } from "../utils/factory"
-import { events, features, state$, utils } from "./facade"
+import { events, features, state$ } from "./facade"
 import { Subject, takeUntil } from "rxjs"
 
 const SAVE_AFTER_IN_SECS = 10
@@ -12,7 +12,6 @@ const trackerService = Factory.getTrackerService()
 
 export function Home() {
   const [trackers, setTrackers] = useState<TrackerModel[]>([])
-  const [timer, setTimer] = useState<number | undefined>(undefined)
   const [activeTracker, setActiveTracker] = useState<TrackerModel | undefined>(undefined)
 
   useEffect(() => {
@@ -20,13 +19,13 @@ export function Home() {
 
     state$.pipe(takeUntil(destroy$)).subscribe((s) => {
       setTrackers(s.trackers)
-      setTimer(s.timer)
       setActiveTracker(s.activeTracker)
     })
 
     features.addTracker$.pipe(takeUntil(destroy$)).subscribe()
     features.deleteTracker$.pipe(takeUntil(destroy$)).subscribe()
     features.startTracker$.pipe(takeUntil(destroy$)).subscribe()
+    features.pauseTracker$.pipe(takeUntil(destroy$)).subscribe()
 
     return () => {
       destroy$.next()
@@ -44,39 +43,6 @@ export function Home() {
     }
   }, [])
 
-  const makeTrackerActive = (newTracker: TrackerModel | undefined, oldTracker: TrackerModel | undefined) => {
-    const findAndReplace = (tracker: TrackerModel) => {
-      const index = trackers.findIndex((t) => t.name === tracker.name)
-      trackers.splice(index, 1, tracker)
-      utils.setTrackers([...trackers])
-    }
-
-    oldTracker && findAndReplace(oldTracker)
-
-    utils.setActiveTracker(newTracker)
-  }
-
-  const destroyTimer = () => {
-    clearInterval(timer)
-    utils.setTimer(undefined)
-  }
-
-  const onPauseTracker = useCallback(
-    (pausedTracker: TrackerModel | undefined) => {
-      destroyTimer()
-      makeTrackerActive(undefined, pausedTracker)
-    },
-    [timer]
-  )
-
-  const onStartTracker = useCallback((tracker: TrackerModel) => {
-    events.startTracker$.next(tracker)
-  }, [])
-
-  const onDeleteTracker = useCallback((tracker: TrackerModel) => {
-    events.deleteTrackerClick$.next(tracker)
-  }, [])
-
   return (
     <>
       <ul className="tracker-list">
@@ -84,9 +50,9 @@ export function Home() {
           <li key={t.name}>
             {
               <Tracker
-                onStartTracker={onStartTracker}
-                onPauseTracker={onPauseTracker}
-                onDeleteTracker={onDeleteTracker}
+                onStartTracker={(t) => events.startTracker$.next(t)}
+                onPauseTracker={(t) => events.pauseTracker$.next(t)}
+                onDeleteTracker={(t) => events.deleteTrackerClick$.next(t)}
                 isActive={t.name === activeTracker?.name}
                 tracker={t.name === activeTracker?.name ? activeTracker : t}
               />

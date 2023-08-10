@@ -10,21 +10,22 @@ interface State {
   activeTracker: Tracker | undefined
 }
 
-export const state$ = new BehaviorSubject<State>({
+const state$ = new BehaviorSubject<State>({
   trackers: trackerService.load(),
   timer: undefined,
   activeTracker: undefined,
 })
 
-export const events = {
+const events = {
   addTrackerClick$: new Subject<void>(),
   deleteTrackerClick$: new Subject<Tracker>(),
   startTracker$: new Subject<Tracker>(),
+  pauseTracker$: new Subject<Tracker | undefined>(),
 }
 
 type GetState<T> = (old: T) => T
 
-export const utils = {
+const utils = {
   setTrackers(trackers: Tracker[] | GetState<Tracker[]>) {
     let newTrackers: Tracker[]
     if (typeof trackers === "function") {
@@ -81,7 +82,7 @@ const createTimer = () => {
   utils.setTimer(timer)
 }
 
-export const features = {
+const features = {
   addTracker$: events.addTrackerClick$.pipe(
     map(trackerService.add),
     map((tracker) => [...state$.value.trackers, tracker]),
@@ -106,4 +107,12 @@ export const features = {
       createTimer()
     })
   ),
+  pauseTracker$: events.pauseTracker$.pipe(
+    tap((trackerToBePaused) => {
+      destroyTimer(state$.value.timer)
+      makeTrackerActive(undefined, trackerToBePaused)
+    })
+  ),
 }
+
+export { features, events, state$ }
