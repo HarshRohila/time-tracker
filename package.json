@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "cypress:open": "cypress open",
     "deploy": "pnpm build --base=/time-tracker && gh-pages -d dist",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "test:cypress": "npx cypress run --browser chrome"
   },
   "dependencies": {
     "preact": "^10.16.0",
