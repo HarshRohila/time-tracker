@@ -4,8 +4,8 @@ import "./Home.scss"
 import { Tracker as TrackerModel } from "../tracker/tracker-service"
 import { Factory } from "../utils/factory"
 import { events, features, state$ } from "./facade"
-import { Subject, takeUntil } from "rxjs"
-import { subscribeUntil } from "../utils/subscribeTill"
+import { Subject } from "rxjs"
+import { untilDestroy } from "../utils/subscribeTill"
 
 const SAVE_AFTER_IN_SECS = 10
 
@@ -17,16 +17,17 @@ export function Home() {
 
   useEffect(() => {
     const destroy$ = new Subject<void>()
+    const { subscribe, stream } = untilDestroy(destroy$)
 
-    state$.pipe(takeUntil(destroy$)).subscribe((s) => {
+    stream(state$).subscribe((s) => {
       setTrackers(s.trackers)
       setActiveTracker(s.activeTracker)
     })
 
-    subscribeUntil(features.addTracker$, destroy$)
-    subscribeUntil(features.deleteTracker$, destroy$)
-    subscribeUntil(features.startTracker$, destroy$)
-    subscribeUntil(features.pauseTracker$, destroy$)
+    subscribe(features.addTracker$)
+    subscribe(features.deleteTracker$)
+    subscribe(features.startTracker$)
+    subscribe(features.pauseTracker$)
 
     return () => {
       destroy$.next()
