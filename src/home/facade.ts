@@ -6,19 +6,26 @@ const trackerService = Factory.getTrackerService()
 
 interface State {
   trackers: Tracker[]
+  timer: number | undefined
+  activeTracker: Tracker | undefined
 }
 
-export const state$ = new BehaviorSubject<State>({ trackers: trackerService.load() })
+export const state$ = new BehaviorSubject<State>({
+  trackers: trackerService.load(),
+  timer: undefined,
+  activeTracker: undefined,
+})
 
 export const events = {
   addTrackerClick$: new Subject<void>(),
   deleteTrackerClick$: new Subject<Tracker>(),
+  startTracker$: new Subject<Tracker>(),
 }
 
-type SetTracker = (old: Tracker[]) => Tracker[]
+type GetState<T> = (old: T) => T
 
 export const utils = {
-  setTrackers(trackers: Tracker[] | SetTracker) {
+  setTrackers(trackers: Tracker[] | GetState<Tracker[]>) {
     let newTrackers: Tracker[]
     if (typeof trackers === "function") {
       newTrackers = trackers(state$.value.trackers)
@@ -29,6 +36,49 @@ export const utils = {
     state$.next({ ...state$.value, trackers: newTrackers })
     trackerService.save(newTrackers)
   },
+  setTimer(timer: number | undefined) {
+    state$.next({ ...state$.value, timer })
+  },
+  setActiveTracker(tracker: State["activeTracker"] | GetState<State["activeTracker"]>) {
+    let newActiveTracker: State["activeTracker"]
+    if (typeof tracker === "function") {
+      newActiveTracker = tracker(state$.value.activeTracker)
+    } else {
+      newActiveTracker = tracker
+    }
+
+    state$.next({ ...state$.value, activeTracker: newActiveTracker })
+  },
+}
+
+const destroyTimer = (timer: State["timer"]) => {
+  clearInterval(timer)
+  utils.setTimer(undefined)
+}
+
+const makeTrackerActive = (newTracker: Tracker | undefined, oldTracker: Tracker | undefined) => {
+  const findAndReplace = (tracker: Tracker) => {
+    const { trackers } = state$.value
+    const index = trackers.findIndex((t) => t.name === tracker.name)
+    trackers.splice(index, 1, tracker)
+    utils.setTrackers([...trackers])
+  }
+
+  oldTracker && findAndReplace(oldTracker)
+
+  utils.setActiveTracker(newTracker)
+}
+
+const createTimer = () => {
+  const timer = setInterval(() => {
+    utils.setActiveTracker((tracker) => {
+      if (!tracker) return tracker
+
+      return { ...tracker, timeInSecs: tracker.timeInSecs + 1 }
+    })
+  }, 1000)
+
+  utils.setTimer(timer)
 }
 
 export const features = {
@@ -47,6 +97,13 @@ export const features = {
     }),
     tap((trackers) => {
       utils.setTrackers(trackers)
+    })
+  ),
+  startTracker$: events.startTracker$.pipe(
+    tap((trackerToBeStarted) => {
+      destroyTimer(state$.value.timer)
+      makeTrackerActive(trackerToBeStarted, state$.value.activeTracker)
+      createTimer()
     })
   ),
 }

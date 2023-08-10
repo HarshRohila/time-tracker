@@ -12,26 +12,27 @@ const trackerService = Factory.getTrackerService()
 
 export function Home() {
   const [trackers, setTrackers] = useState<TrackerModel[]>([])
+  const [timer, setTimer] = useState<number | undefined>(undefined)
+  const [activeTracker, setActiveTracker] = useState<TrackerModel | undefined>(undefined)
 
   useEffect(() => {
     const destroy$ = new Subject<void>()
 
     state$.pipe(takeUntil(destroy$)).subscribe((s) => {
       setTrackers(s.trackers)
+      setTimer(s.timer)
+      setActiveTracker(s.activeTracker)
     })
 
     features.addTracker$.pipe(takeUntil(destroy$)).subscribe()
     features.deleteTracker$.pipe(takeUntil(destroy$)).subscribe()
+    features.startTracker$.pipe(takeUntil(destroy$)).subscribe()
 
     return () => {
       destroy$.next()
       destroy$.complete()
     }
   }, [])
-
-  const [timer, setTimer] = useState<number | undefined>(undefined)
-
-  const [activeTracker, setActiveTracker] = useState<TrackerModel | undefined>(undefined)
 
   useEffect(() => {
     let saveInterval = setInterval(() => {
@@ -52,24 +53,12 @@ export function Home() {
 
     oldTracker && findAndReplace(oldTracker)
 
-    setActiveTracker(newTracker)
+    utils.setActiveTracker(newTracker)
   }
 
   const destroyTimer = () => {
     clearInterval(timer)
-    setTimer(undefined)
-  }
-
-  const createTimer = () => {
-    const timer = setInterval(() => {
-      setActiveTracker((tracker) => {
-        if (!tracker) return tracker
-
-        return { ...tracker, timeInSecs: tracker.timeInSecs + 1 }
-      })
-    }, 1000)
-
-    setTimer(timer)
+    utils.setTimer(undefined)
   }
 
   const onPauseTracker = useCallback(
@@ -80,14 +69,9 @@ export function Home() {
     [timer]
   )
 
-  const onStartTracker = useCallback(
-    (tracker: TrackerModel) => {
-      destroyTimer()
-      makeTrackerActive(tracker, activeTracker)
-      createTimer()
-    },
-    [timer, activeTracker]
-  )
+  const onStartTracker = useCallback((tracker: TrackerModel) => {
+    events.startTracker$.next(tracker)
+  }, [])
 
   const onDeleteTracker = useCallback((tracker: TrackerModel) => {
     events.deleteTrackerClick$.next(tracker)
