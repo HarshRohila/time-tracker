@@ -110,7 +110,7 @@ export function Home() {
           </li>
         ))}
       </ul>
-      <button onClick={handleAddTracker} class="add-tracker">
+      <button data-test="add-tracker" onClick={handleAddTracker} class="add-tracker">
         Add
       </button>
     </>
