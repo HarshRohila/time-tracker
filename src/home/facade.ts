@@ -4,15 +4,14 @@ import { Tracker } from "../tracker/tracker-service"
 
 const trackerService = Factory.getTrackerService()
 
+let timer: number | undefined
 interface State {
   trackers: Tracker[]
-  timer: number | undefined
   activeTracker: Tracker | undefined
 }
 
 const state$ = new BehaviorSubject<State>({
   trackers: trackerService.load(),
-  timer: undefined,
   activeTracker: undefined,
 })
 
@@ -37,8 +36,8 @@ const utils = {
     state$.next({ ...state$.value, trackers: newTrackers })
     trackerService.save(newTrackers)
   },
-  setTimer(timer: number | undefined) {
-    state$.next({ ...state$.value, timer })
+  setTimer(t: number | undefined) {
+    timer = t
   },
   setActiveTracker(tracker: State["activeTracker"] | GetState<State["activeTracker"]>) {
     let newActiveTracker: State["activeTracker"]
@@ -52,7 +51,7 @@ const utils = {
   },
 }
 
-const destroyTimer = (timer: State["timer"]) => {
+const destroyTimer = () => {
   clearInterval(timer)
   utils.setTimer(undefined)
 }
@@ -102,14 +101,14 @@ const features = {
   ),
   startTracker$: events.startTracker$.pipe(
     tap((trackerToBeStarted) => {
-      destroyTimer(state$.value.timer)
+      destroyTimer()
       makeTrackerActive(trackerToBeStarted, state$.value.activeTracker)
       createTimer()
     })
   ),
   pauseTracker$: events.pauseTracker$.pipe(
     tap((trackerToBePaused) => {
-      destroyTimer(state$.value.timer)
+      destroyTimer()
       makeTrackerActive(undefined, trackerToBePaused)
     })
   ),
