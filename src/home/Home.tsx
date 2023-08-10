@@ -5,6 +5,7 @@ import { Tracker as TrackerModel } from "../tracker/tracker-service"
 import { Factory } from "../utils/factory"
 import { events, features, state$ } from "./facade"
 import { Subject, takeUntil } from "rxjs"
+import { subscribeUntil } from "../utils/subscribeTill"
 
 const SAVE_AFTER_IN_SECS = 10
 
@@ -22,10 +23,10 @@ export function Home() {
       setActiveTracker(s.activeTracker)
     })
 
-    features.addTracker$.pipe(takeUntil(destroy$)).subscribe()
-    features.deleteTracker$.pipe(takeUntil(destroy$)).subscribe()
-    features.startTracker$.pipe(takeUntil(destroy$)).subscribe()
-    features.pauseTracker$.pipe(takeUntil(destroy$)).subscribe()
+    subscribeUntil(features.addTracker$, destroy$)
+    subscribeUntil(features.deleteTracker$, destroy$)
+    subscribeUntil(features.startTracker$, destroy$)
+    subscribeUntil(features.pauseTracker$, destroy$)
 
     return () => {
       destroy$.next()
