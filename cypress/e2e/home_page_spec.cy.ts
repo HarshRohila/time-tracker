@@ -142,15 +142,20 @@ describe("The Home Page", () => {
         { name: "secondTracker", timeInSecs: 3 },
       ])
 
-      cy.visit("/").then(() => {
-        const clock = cy.clock()
+      const clock = cy.clock()
 
-        startTracker(clock, 10000, 1)
+      cy.visit("/").then(() => {
+        clock.tick(100)
+        cy.getByTestId("start-tracker").should("exist").log("Trackers loaded")
+
+        startTracker(clock, 11000, 1)
 
         cy.reload()
+        clock.tick(100)
+
+        cy.getByTestId("start-tracker").should("exist").log("Trackers loaded")
 
         cy.window().then(() => {
-          clock.tick(100)
           assertTrackerTime(getFormattedTime("12"), 1).log("Timer persisted after page reload")
         })
       })
