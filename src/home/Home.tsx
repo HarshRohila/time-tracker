@@ -28,6 +28,7 @@ export function Home() {
     subscribe(features.deleteTracker$)
     subscribe(features.startTracker$)
     subscribe(features.pauseTracker$)
+    subscribe(features.editTracker$)
 
     return () => {
       destroy$.next()

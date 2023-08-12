@@ -18,6 +18,7 @@ const state$ = new BehaviorSubject<State>({
 const events = {
   addTrackerClick$: new Subject<void>(),
   deleteTrackerClick$: new Subject<Tracker>(),
+  editTracker$: new Subject<Tracker>(),
   startTracker$: new Subject<Tracker>(),
   pauseTracker$: new Subject<Tracker | undefined>(),
 }
@@ -110,6 +111,18 @@ const features = {
     tap((trackerToBePaused) => {
       destroyTimer()
       makeTrackerActive(undefined, trackerToBePaused)
+    })
+  ),
+  editTracker$: events.editTracker$.pipe(
+    map(trackerService.edit),
+    map((edittedTracker) => {
+      return state$.value.trackers.map((t) => {
+        if (t.name === edittedTracker.name) return edittedTracker
+        return t
+      })
+    }),
+    tap((trackers) => {
+      utils.setTrackers(trackers)
     })
   ),
 }

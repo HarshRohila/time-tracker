@@ -1,8 +1,9 @@
 import { useCallback } from "preact/hooks"
-import { Tracker as TrackerModel } from "./tracker-service"
+import { TrackerMethods, Tracker as TrackerModel } from "./tracker-service"
 import "./tracker.scss"
 import { ActionBtn } from "../ui/action-btn/action-btn"
 import { secondsToHHMMSS } from "../utils/time-formatter"
+import { events } from "../home/facade"
 
 interface TrackerProps {
   tracker: TrackerModel
@@ -26,10 +27,11 @@ export function Tracker({ tracker, onStartTracker, isActive, onPauseTracker, onD
   }, [tracker, onDeleteTracker])
 
   const time = secondsToHHMMSS(tracker.timeInSecs)
+  const trackerFns = new TrackerMethods(tracker)
 
   return (
     <div className="tracker" data-test="tracker">
-      <span>{tracker.name}</span>
+      <span data-test="tracker-name">{trackerFns.getName()}</span>
       <span data-test="tracker-time">{time}</span>
       {!isActive && (
         <button data-test="start-tracker" className="primary" onClick={handleStart}>
@@ -43,6 +45,7 @@ export function Tracker({ tracker, onStartTracker, isActive, onPauseTracker, onD
       )}
       <div className="actions">
         <ActionBtn iconName="trash" onBtnClick={handleDelete} title="Delete" />
+        <ActionBtn iconName="pencil" onBtnClick={() => events.editTracker$.next(tracker)} title="Edit" />
       </div>
     </div>
   )

@@ -23,5 +23,7 @@ $dim: 100px;
     right: 0;
     top: 0;
     transform: translateX(100%);
+    display: flex;
+    flex-direction: column;
   }
 }

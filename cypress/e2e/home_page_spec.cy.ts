@@ -18,6 +18,10 @@ const assertTrackerTime = (matchingText: string, index = 0) => {
   return cy.getByTestId("tracker-time").eq(index).should("have.text", matchingText)
 }
 
+const assertTrackerName = (matchingText: string, index = 0) => {
+  return cy.getByTestId("tracker-name").eq(index).should("have.text", matchingText)
+}
+
 const preloadTrackers = (win: Cypress.AUTWindow, trackers: any[]) => {
   win.localStorage.setItem("trackers", JSON.stringify(trackers))
 }
@@ -75,6 +79,21 @@ describe("The Home Page", () => {
         getTracker(1).should("exist").log("Tracker exist before delete")
         getTracker(1).find('[data-test="delete"]').click()
         getTracker(1).should("not.exist").log("Tracker Deleted after Delete click")
+      })
+    })
+  })
+
+  it("User can edit tracker name", () => {
+    cy.window().then((win) => {
+      preloadTrackers(win, [
+        { name: "firstTracker", timeInSecs: 5 },
+        { name: "secondTracker", timeInSecs: 3 },
+      ])
+
+      cy.visit("/").then(() => {
+        cy.stub(win, "prompt").returns("edittedTracker")
+        getTracker(0).find('[data-test="edit"]').click()
+        assertTrackerName("edittedTracker", 0)
       })
     })
   })
