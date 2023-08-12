@@ -21,6 +21,7 @@ const events = {
   editTracker$: new Subject<Tracker>(),
   startTracker$: new Subject<Tracker>(),
   pauseTracker$: new Subject<Tracker | undefined>(),
+  resetAllTrackers$: new Subject<void>(),
 }
 
 type GetState<T> = (old: T) => T
@@ -120,6 +121,16 @@ const features = {
         if (t.name === edittedTracker.name) return edittedTracker
         return t
       })
+    }),
+    tap((trackers) => {
+      utils.setTrackers(trackers)
+    })
+  ),
+  resetAllTrackers$: events.resetAllTrackers$.pipe(
+    map(() => {
+      const response = confirm("Reset all Timers?")
+      if (response) return state$.value.trackers.map((t) => ({ ...t, timeInSecs: 0 }))
+      return state$.value.trackers
     }),
     tap((trackers) => {
       utils.setTrackers(trackers)

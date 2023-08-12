@@ -1,13 +1,18 @@
 $dim: 100px;
 
-.add-tracker {
+.action-container {
   position: absolute;
   right: 0;
   top: 0;
+  display: flex;
+  flex-direction: column;
+}
+.add-tracker {
   height: $dim;
   width: $dim;
-  font-size: 2rem;
+  font-size: 1.6rem;
 }
+
 .tracker-list {
   list-style-type: none;
   li {

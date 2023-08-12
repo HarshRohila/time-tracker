@@ -97,4 +97,23 @@ describe("The Home Page", () => {
       })
     })
   })
+
+  it("User can reset all timers", () => {
+    cy.window().then((win) => {
+      preloadTrackers(win, [
+        { name: "firstTracker", timeInSecs: 5 },
+        { name: "secondTracker", timeInSecs: 3 },
+      ])
+
+      cy.visit("/").then(() => {
+        cy.on("window:confirm", (message) => {
+          return true
+        })
+        cy.getByTestId("reset-all-timers").click()
+
+        assertTrackerTime(getFormattedTime("0"), 0)
+        assertTrackerTime(getFormattedTime("0"), 1)
+      })
+    })
+  })
 })

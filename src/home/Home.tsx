@@ -29,6 +29,7 @@ export function Home() {
     subscribe(features.startTracker$)
     subscribe(features.pauseTracker$)
     subscribe(features.editTracker$)
+    subscribe(features.resetAllTrackers$)
 
     return () => {
       destroy$.next()
@@ -63,9 +64,14 @@ export function Home() {
           </li>
         ))}
       </ul>
-      <button data-test="add-tracker" onClick={() => events.addTrackerClick$.next()} class="add-tracker">
-        Add
-      </button>
+      <div className="action-container">
+        <button data-test="add-tracker" onClick={() => events.addTrackerClick$.next()} class="add-tracker">
+          Add
+        </button>
+        <button data-test="reset-all-timers" onClick={() => events.resetAllTrackers$.next()} class="add-tracker">
+          Reset all Timers
+        </button>
+      </div>
     </>
   )
 }
