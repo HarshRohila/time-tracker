@@ -134,4 +134,26 @@ describe("The Home Page", () => {
       })
     })
   })
+
+  it("Timers auto save after 10 seconds", () => {
+    cy.window().then((win) => {
+      preloadTrackers(win, [
+        { name: "firstTracker", timeInSecs: 5 },
+        { name: "secondTracker", timeInSecs: 3 },
+      ])
+
+      cy.visit("/").then(() => {
+        const clock = cy.clock()
+
+        startTracker(clock, 10000, 1)
+
+        cy.reload()
+
+        cy.window().then(() => {
+          clock.tick(100)
+          assertTrackerTime(getFormattedTime("12"), 1).log("Timer persisted after page reload")
+        })
+      })
+    })
+  })
 })

@@ -2,14 +2,11 @@ import { useEffect, useState } from "preact/hooks"
 import { Tracker } from "../tracker/tracker"
 import "./Home.scss"
 import { Tracker as TrackerModel } from "../tracker/tracker-service"
-import { Factory } from "../utils/factory"
 import { events, features, state$ } from "./facade"
 import { Subject } from "rxjs"
 import { untilDestroy } from "../utils/subscribeTill"
 
 const SAVE_AFTER_IN_SECS = 10
-
-const trackerService = Factory.getTrackerService()
 
 export function Home() {
   const [trackers, setTrackers] = useState<TrackerModel[]>([])
@@ -31,6 +28,7 @@ export function Home() {
     subscribe(features.editTracker$)
     subscribe(features.resetAllTrackers$)
     subscribe(features.deleteAllTrackers$)
+    subscribe(features.autoSave$)
 
     return () => {
       destroy$.next()
@@ -40,7 +38,7 @@ export function Home() {
 
   useEffect(() => {
     let saveInterval = setInterval(() => {
-      trackerService.save(trackers)
+      events.autoSave$.next()
     }, SAVE_AFTER_IN_SECS * 1000)
 
     return () => {

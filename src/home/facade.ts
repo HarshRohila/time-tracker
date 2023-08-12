@@ -23,6 +23,7 @@ const events = {
   pauseTracker$: new Subject<Tracker | undefined>(),
   resetAllTrackers$: new Subject<void>(),
   deleteAllTrackers$: new Subject<void>(),
+  autoSave$: new Subject<void>(),
 }
 
 type GetState<T> = (old: T) => T
@@ -145,6 +146,11 @@ const features = {
     }),
     tap((trackers) => {
       utils.setTrackers(trackers)
+    })
+  ),
+  autoSave$: events.autoSave$.pipe(
+    tap(() => {
+      makeTrackerActive(state$.value.activeTracker, state$.value.activeTracker)
     })
   ),
 }
