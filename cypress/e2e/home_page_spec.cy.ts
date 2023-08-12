@@ -116,4 +116,22 @@ describe("The Home Page", () => {
       })
     })
   })
+
+  it("User can Delete all timers", () => {
+    cy.window().then((win) => {
+      preloadTrackers(win, [
+        { name: "firstTracker", timeInSecs: 5 },
+        { name: "secondTracker", timeInSecs: 3 },
+      ])
+
+      cy.visit("/").then(() => {
+        cy.on("window:confirm", (message) => {
+          return true
+        })
+        cy.getByTestId("delete-all-timers").click()
+
+        cy.getByTestId("tracker").should("not.exist").log("All Trackers Deleted")
+      })
+    })
+  })
 })

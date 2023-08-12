@@ -22,6 +22,7 @@ const events = {
   startTracker$: new Subject<Tracker>(),
   pauseTracker$: new Subject<Tracker | undefined>(),
   resetAllTrackers$: new Subject<void>(),
+  deleteAllTrackers$: new Subject<void>(),
 }
 
 type GetState<T> = (old: T) => T
@@ -130,6 +131,16 @@ const features = {
     map(() => {
       const response = confirm("Reset all Timers?")
       if (response) return state$.value.trackers.map((t) => ({ ...t, timeInSecs: 0 }))
+      return state$.value.trackers
+    }),
+    tap((trackers) => {
+      utils.setTrackers(trackers)
+    })
+  ),
+  deleteAllTrackers$: events.deleteAllTrackers$.pipe(
+    map(() => {
+      const response = confirm("Delete all Timers?")
+      if (response) return []
       return state$.value.trackers
     }),
     tap((trackers) => {
