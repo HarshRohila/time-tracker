@@ -22,6 +22,10 @@ const preloadTrackers = (win: Cypress.AUTWindow, trackers: any[]) => {
   win.localStorage.setItem("trackers", JSON.stringify(trackers))
 }
 
+const getFormattedTime = (time: string) => {
+  return "00:00:" + time.padStart(2, "0")
+}
+
 describe("The Home Page", () => {
   it("Adding tracker and starting it", () => {
     cy.visit("/")
@@ -34,7 +38,7 @@ describe("The Home Page", () => {
 
       const clock = cy.clock()
       startTracker(clock, 10000)
-      assertTrackerTime("10").log("Tracker shows expected time")
+      assertTrackerTime(getFormattedTime("10")).log("Tracker shows expected time")
     })
   })
 
@@ -50,8 +54,8 @@ describe("The Home Page", () => {
         startTracker(clock, 4000, 1)
         startTracker(clock, 5000, 0)
 
-        assertTrackerTime("10", 0).log("First Tracker shows expected time")
-        assertTrackerTime("4", 1).log("Second Tracker time is paused after first tracker is Started")
+        assertTrackerTime(getFormattedTime("10"), 0).log("First Tracker shows expected time")
+        assertTrackerTime(getFormattedTime("4"), 1).log("Second Tracker time is paused after first tracker is Started")
       })
     })
   })

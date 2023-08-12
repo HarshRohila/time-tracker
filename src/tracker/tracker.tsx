@@ -2,6 +2,7 @@ import { useCallback } from "preact/hooks"
 import { Tracker as TrackerModel } from "./tracker-service"
 import "./tracker.scss"
 import { ActionBtn } from "../ui/action-btn/action-btn"
+import { secondsToHHMMSS } from "../utils/time-formatter"
 
 interface TrackerProps {
   tracker: TrackerModel
@@ -24,10 +25,12 @@ export function Tracker({ tracker, onStartTracker, isActive, onPauseTracker, onD
     onDeleteTracker?.(tracker)
   }, [tracker, onDeleteTracker])
 
+  const time = secondsToHHMMSS(tracker.timeInSecs)
+
   return (
     <div className="tracker" data-test="tracker">
       <span>{tracker.name}</span>
-      <span data-test="tracker-time">{tracker.timeInSecs.toString()}</span>
+      <span data-test="tracker-time">{time}</span>
       {!isActive && (
         <button data-test="start-tracker" className="primary" onClick={handleStart}>
           Start
