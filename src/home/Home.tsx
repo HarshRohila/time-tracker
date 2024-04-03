@@ -2,7 +2,7 @@ import { useEffect, useState } from "preact/hooks";
 import { Tracker } from "../tracker/tracker";
 import "./Home.scss";
 import { Tracker as TrackerModel } from "../tracker/tracker-service";
-import { features, state$ } from "./facade";
+import { features, state } from "./facade";
 import { useEvent, useJustSubscribe, useSubscribe, useVoidEvent } from "../libs/state-utils/react/component-util";
 
 const SAVE_AFTER_IN_SECS = 10;
@@ -11,7 +11,7 @@ export function Home() {
   const [trackers, setTrackers] = useState<TrackerModel[]>([]);
   const [activeTracker, setActiveTracker] = useState<TrackerModel | undefined>(undefined);
 
-  useSubscribe(state$, (s) => {
+  useSubscribe(state.asObservable(), (s) => {
     setTrackers(s.trackers);
     setActiveTracker(s.activeTracker);
   });
