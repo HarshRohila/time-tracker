@@ -1,4 +1,4 @@
-import { BehaviorSubject, Observable, Subject, map, tap } from "rxjs";
+import { BehaviorSubject, Observable, map, tap } from "rxjs";
 import { Factory } from "../utils/factory";
 import { Tracker } from "../tracker/tracker-service";
 
@@ -14,17 +14,6 @@ const state$ = new BehaviorSubject<State>({
   trackers: trackerService.load(),
   activeTracker: undefined,
 });
-
-const events = {
-  addTrackerClick$: new Subject<void>(),
-  deleteTrackerClick$: new Subject<Tracker>(),
-  editTracker$: new Subject<Tracker>(),
-  startTracker$: new Subject<Tracker>(),
-  pauseTracker$: new Subject<Tracker | undefined>(),
-  resetAllTrackers$: new Subject<void>(),
-  deleteAllTrackers$: new Subject<void>(),
-  autoSave$: new Subject<void>(),
-};
 
 type GetState<T> = (old: T) => T;
 
@@ -43,9 +32,7 @@ const utils = {
   setTimer(t: number | undefined) {
     timer = t;
   },
-  setActiveTracker(
-    tracker: State["activeTracker"] | GetState<State["activeTracker"]>
-  ) {
+  setActiveTracker(tracker: State["activeTracker"] | GetState<State["activeTracker"]>) {
     let newActiveTracker: State["activeTracker"];
     if (typeof tracker === "function") {
       newActiveTracker = tracker(state$.value.activeTracker);
@@ -62,10 +49,7 @@ const destroyTimer = () => {
   utils.setTimer(undefined);
 };
 
-const makeTrackerActive = (
-  newTracker: Tracker | undefined,
-  oldTracker: Tracker | undefined
-) => {
+const makeTrackerActive = (newTracker: Tracker | undefined, oldTracker: Tracker | undefined) => {
   const findAndReplace = (tracker: Tracker) => {
     const { trackers } = state$.value;
     const index = trackers.findIndex((t) => t.name === tracker.name);
@@ -103,14 +87,9 @@ const features = {
   deleteTracker(source: Observable<Tracker>) {
     return source.pipe(
       map((toBeDeletedTracker) => {
-        const response = confirm(
-          `Are you sure you want to delete tracker - ${toBeDeletedTracker.name} ?`
-        );
-        const filterOutTracker = (tracker: Tracker) =>
-          state$.value.trackers.filter((t) => t.name !== tracker.name);
-        return response
-          ? filterOutTracker(toBeDeletedTracker)
-          : state$.value.trackers;
+        const response = confirm(`Are you sure you want to delete tracker - ${toBeDeletedTracker.name} ?`);
+        const filterOutTracker = (tracker: Tracker) => state$.value.trackers.filter((t) => t.name !== tracker.name);
+        return response ? filterOutTracker(toBeDeletedTracker) : state$.value.trackers;
       }),
       tap((trackers) => {
         utils.setTrackers(trackers);
@@ -134,24 +113,25 @@ const features = {
       })
     );
   },
-  editTracker$: events.editTracker$.pipe(
-    map(trackerService.edit),
-    map((edittedTracker) => {
-      return state$.value.trackers.map((t) => {
-        if (t.name === edittedTracker.name) return edittedTracker;
-        return t;
-      });
-    }),
-    tap((trackers) => {
-      utils.setTrackers(trackers);
-    })
-  ),
+  editTracker(source: Observable<Tracker>) {
+    return source.pipe(
+      map(trackerService.edit),
+      map((edittedTracker) => {
+        return state$.value.trackers.map((t) => {
+          if (t.name === edittedTracker.name) return edittedTracker;
+          return t;
+        });
+      }),
+      tap((trackers) => {
+        utils.setTrackers(trackers);
+      })
+    );
+  },
   resetAllTrackers(source: Observable<void>) {
     return source.pipe(
       map(() => {
         const response = confirm("Reset all Timers?");
-        if (response)
-          return state$.value.trackers.map((t) => ({ ...t, timeInSecs: 0 }));
+        if (response) return state$.value.trackers.map((t) => ({ ...t, timeInSecs: 0 }));
         return state$.value.trackers;
       }),
       tap((trackers) => {
@@ -171,21 +151,13 @@ const features = {
       })
     );
   },
-  // deleteAllTrackers$: events.deleteAllTrackers$.pipe(
-  //   map(() => {
-  //     const response = confirm("Delete all Timers?");
-  //     if (response) return [];
-  //     return state$.value.trackers;
-  //   }),
-  //   tap((trackers) => {
-  //     utils.setTrackers(trackers);
-  //   })
-  // ),
-  autoSave$: events.autoSave$.pipe(
-    tap(() => {
-      makeTrackerActive(state$.value.activeTracker, state$.value.activeTracker);
-    })
-  ),
+  autoSave(source: Observable<void>) {
+    return source.pipe(
+      tap(() => {
+        makeTrackerActive(state$.value.activeTracker, state$.value.activeTracker);
+      })
+    );
+  },
 };
 
-export { features, events, state$ };
+export { features, state$ };

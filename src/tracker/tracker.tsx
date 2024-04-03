@@ -1,33 +1,40 @@
-import { useCallback } from "preact/hooks"
-import { TrackerMethods, Tracker as TrackerModel } from "./tracker-service"
-import "./tracker.scss"
-import { ActionBtn } from "../ui/action-btn/action-btn"
-import { secondsToHHMMSS } from "../utils/time-formatter"
-import { events } from "../home/facade"
+import { useCallback } from "preact/hooks";
+import { TrackerMethods, Tracker as TrackerModel } from "./tracker-service";
+import "./tracker.scss";
+import { ActionBtn } from "../ui/action-btn/action-btn";
+import { secondsToHHMMSS } from "../utils/time-formatter";
 
 interface TrackerProps {
-  tracker: TrackerModel
-  onStartTracker?: (tracker: TrackerModel) => void
-  onPauseTracker?: (tracker: TrackerModel) => void
-  onDeleteTracker?: (tracker: TrackerModel) => void
-  isActive: boolean
+  tracker: TrackerModel;
+  onStartTracker?: (tracker: TrackerModel) => void;
+  onPauseTracker?: (tracker: TrackerModel) => void;
+  onDeleteTracker?: (tracker: TrackerModel) => void;
+  onEditTracker?: (tracker: TrackerModel) => void;
+  isActive: boolean;
 }
 
-export function Tracker({ tracker, onStartTracker, isActive, onPauseTracker, onDeleteTracker }: TrackerProps) {
+export function Tracker({
+  tracker,
+  onStartTracker,
+  isActive,
+  onPauseTracker,
+  onDeleteTracker,
+  onEditTracker,
+}: TrackerProps) {
   const handlePause = useCallback(() => {
-    onPauseTracker?.(tracker)
-  }, [tracker, onPauseTracker])
+    onPauseTracker?.(tracker);
+  }, [tracker, onPauseTracker]);
 
   const handleStart = useCallback(() => {
-    onStartTracker?.(tracker)
-  }, [tracker, onStartTracker])
+    onStartTracker?.(tracker);
+  }, [tracker, onStartTracker]);
 
   const handleDelete = useCallback(() => {
-    onDeleteTracker?.(tracker)
-  }, [tracker, onDeleteTracker])
+    onDeleteTracker?.(tracker);
+  }, [tracker, onDeleteTracker]);
 
-  const time = secondsToHHMMSS(tracker.timeInSecs)
-  const trackerFns = new TrackerMethods(tracker)
+  const time = secondsToHHMMSS(tracker.timeInSecs);
+  const trackerFns = new TrackerMethods(tracker);
 
   return (
     <div className="tracker" data-test="tracker">
@@ -45,8 +52,8 @@ export function Tracker({ tracker, onStartTracker, isActive, onPauseTracker, onD
       )}
       <div className="actions">
         <ActionBtn iconName="trash" onBtnClick={handleDelete} title="Delete" />
-        <ActionBtn iconName="pencil" onBtnClick={() => events.editTracker$.next(tracker)} title="Edit" />
+        <ActionBtn iconName="pencil" onBtnClick={() => onEditTracker(tracker)} title="Edit" />
       </div>
     </div>
-  )
+  );
 }
